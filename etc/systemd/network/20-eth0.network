@@ -1,0 +1,15 @@
+[Match]
+Name=eth0
+
+[Network]
+DHCP=yes
+
+[Route]
+Gateway=192.168.1.165
+Destination=192.168.1.1
+GatewayOnlink=yes
+
+[Route]
+Gateway=192.168.1.165
+# default
+GatewayOnlink=yes
