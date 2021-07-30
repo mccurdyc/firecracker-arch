@@ -33,13 +33,6 @@ mkdir -p /mnt/arch-root/home/mccurdyc/.tools
 mkdir -p /mnt/arch-root/home/mccurdyc/.cache/yay
 
 cp -r $(pwd)/etc /mnt/arch-root
-cat <<EOF > /mnt/arch-root/usr/local/bin/set_unique_hostname.sh
-#! /usr/bin/env bash
-
-hostnamectl set-hostname firecracker-arch-$(hexdump -n 2 -e '4/4 "%04X" 1 "\n"' /dev/random | tr '[:upper:]' '[:lower:]')
-EOF
-
-chmod +x /mnt/arch-root/usr/local/bin/set_unique_hostname.sh
 
 cp /home/mccurdyc/.ssh/id_ed25519.pub /mnt/arch-root/home/mccurdyc/.ssh
 cp /home/mccurdyc/.ssh/id_ed25519 /mnt/arch-root/home/mccurdyc/.ssh
@@ -58,7 +51,6 @@ arch-chroot /mnt/arch-root locale-gen en_US
 arch-chroot /mnt/arch-root chmod 0400 /etc/shadow /etc/gshadow
 arch-chroot /mnt/arch-root chown -R mccurdyc: /home/mccurdyc
 arch-chroot /mnt/arch-root systemctl enable --now systemd-networkd.service
-arch-chroot /mnt/arch-root systemctl enable --now set_unique_hostname.service
 arch-chroot /mnt/arch-root systemctl enable --now sshd.service
 arch-chroot /mnt/arch-root systemctl enable --now tailscaled.service
 arch-chroot /mnt/arch-root bash -c 'cd /home/mccurdyc/.tools/yay; runuser -u mccurdyc -- makepkg -si --noconfirm' # can't run as root
