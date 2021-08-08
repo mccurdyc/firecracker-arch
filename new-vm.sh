@@ -1,11 +1,23 @@
 #!/bin/bash
 
-N=$1
-# ip tuntap add tap${N} mode tap
-# ip link set tap${N} up
-# ip link set dev tap${N} master br0
+tap_dev_suffix=$(hexdump -n 2 -e '4/4 "%04X" 1 "\n"' /dev/random | tr '[:upper:]' '[:lower:]' | awk '{$1=$1};1')
+tmp_config_file="/tmp/firecracker-${tap_dev_suffix}"
 
-tmp_config_file=$(mktemp /tmp/firecracker-XXXXX)
+function main() {
+  create_tap_interface
+  create_configuration
+  start_vm
+  delete_tap_interface
+  cleanup
+}
+
+function create_tap_interface() {
+  ip tuntap add tap${tap_dev_suffix} mode tap
+  ip link set tap${tap_dev_suffix} up
+  ip link set dev tap${tap_dev_suffix} master br0
+}
+
+function create_configuration() {
 cat <<EOF > $tmp_config_file
 {
   "boot-source": {
@@ -28,13 +40,29 @@ cat <<EOF > $tmp_config_file
   "network-interfaces": [
     {
       "iface_id": "eth0",
-      "guest_mac": "AA:FC:00:00:00:01",
-      "host_dev_name": "tap$N"
+      "guest_mac": "AA:FC:00:00:00:02",
+      "host_dev_name": "tap${tap_dev_suffix}"
     }
   ]
 }
 EOF
+}
 
-firecracker \
-  --no-api \
-  --config-file $tmp_config_file
+function start_vm() {
+  firecracker \
+    --no-api \
+    --config-file $tmp_config_file
+}
+
+
+function delete_tap_interface() {
+  ip link set tap${tap_dev_suffix} down
+  ip link set dev tap${tap_dev_suffix} nomaster
+  ip tuntap del tap${tap_dev_suffix} mode tap
+}
+
+function cleanup() {
+  rm $tmp_config_file
+}
+
+main
