@@ -8,53 +8,49 @@ NAME=$1
 
 [[ -e $NAME.ext4 ]] && rm $NAME.ext4
 
-truncate -s 10G $NAME.ext4
-mkfs.ext4 $NAME.ext4
+truncate -s 2G $NAME.ext4
+sudo mkfs.ext4 $NAME.ext4
 
 # cleanup first
-umount /mnt/arch-root
-rmdir /mnt/arch-root
+sudo umount /mnt/arch-root
+sudo rmdir /mnt/arch-root
 
-mkdir -p /mnt/arch-root
-mount "$(pwd)"/$NAME.ext4 /mnt/arch-root
-pacstrap /mnt/arch-root base \
+sudo mkdir -p /mnt/arch-root
+sudo mount "$(pwd)"/$NAME.ext4 /mnt/arch-root
+sudo pacstrap /mnt/arch-root base \
   base-devel \
-  git \
-  vim \
-  dhcpcd \
   openssh \
-  go \
-  tmux \
   sudo
 
-mkdir -p /mnt/arch-root/home/mccurdyc/
-mkdir -p /mnt/arch-root/home/mccurdyc/.ssh
-mkdir -p /mnt/arch-root/home/mccurdyc/.tools
-mkdir -p /mnt/arch-root/home/mccurdyc/.cache/yay
+sudo mkdir -p /mnt/arch-root/home/mccurdyc/
+# mkdir -p /mnt/arch-root/home/mccurdyc/.ssh
+# mkdir -p /mnt/arch-root/home/mccurdyc/.tools
+# mkdir -p /mnt/arch-root/home/mccurdyc/.cache/yay
+#
+sudo cp -r $(pwd)/etc /mnt/arch-root
+#
+# cp /home/mccurdyc/.ssh/id_ed25519.pub /mnt/arch-root/home/mccurdyc/.ssh
+# cp /home/mccurdyc/.ssh/id_ed25519 /mnt/arch-root/home/mccurdyc/.ssh
+# cp /home/mccurdyc/.ssh/config /mnt/arch-root/home/mccurdyc/.ssh
+#
+# cp -r /home/mccurdyc/dotfiles /mnt/arch-root/home/mccurdyc/dotfiles
+# cp -r /opt/yay /mnt/arch-root/home/mccurdyc/.tools/yay
+sudo hostnamectl hostname fc-arch
 
-cp -r $(pwd)/etc /mnt/arch-root
+sudo rm /mnt/arch-root/etc/systemd/system/getty.target.wants/*
+sudo rm /mnt/arch-root/etc/systemd/system/multi-user.target.wants/*
 
-cp /home/mccurdyc/.ssh/id_ed25519.pub /mnt/arch-root/home/mccurdyc/.ssh
-cp /home/mccurdyc/.ssh/id_ed25519 /mnt/arch-root/home/mccurdyc/.ssh
-cp /home/mccurdyc/.ssh/config /mnt/arch-root/home/mccurdyc/.ssh
+sudo ln -s /dev/null /mnt/arch-root/etc/systemd/system/systemd-random-seed.service
+sudo ln -s /dev/null /mnt/arch-root/etc/systemd/system/cryptsetup.target
 
-cp -r /home/mccurdyc/dotfiles /mnt/arch-root/home/mccurdyc/dotfiles
-cp -r /opt/yay /mnt/arch-root/home/mccurdyc/.tools/yay
-
-rm /mnt/arch-root/etc/systemd/system/getty.target.wants/*
-rm /mnt/arch-root/etc/systemd/system/multi-user.target.wants/*
-
-ln -s /dev/null /mnt/arch-root/etc/systemd/system/systemd-random-seed.service
-ln -s /dev/null /mnt/arch-root/etc/systemd/system/cryptsetup.target
-
-arch-chroot /mnt/arch-root locale-gen en_US
-arch-chroot /mnt/arch-root chmod 0400 /etc/shadow /etc/gshadow
-arch-chroot /mnt/arch-root chown -R mccurdyc: /home/mccurdyc
+# arch-chroot /mnt/arch-root locale-gen en_US
+# arch-chroot /mnt/arch-root chmod 0400 /etc/shadow /etc/gshadow
+# arch-chroot /mnt/arch-root chown -R mccurdyc /home/mccurdyc
 arch-chroot /mnt/arch-root systemctl enable --now systemd-networkd.service
 arch-chroot /mnt/arch-root systemctl enable --now sshd.service
-arch-chroot /mnt/arch-root systemctl enable --now tailscaled.service
-arch-chroot /mnt/arch-root bash -c 'cd /home/mccurdyc/.tools/yay; runuser -u mccurdyc -- makepkg -si --noconfirm' # can't run as root
-arch-chroot /mnt/arch-root bash -c 'cd /home/mccurdyc/dotfiles; runuser -u mccurdyc -- make run'
+# arch-chroot /mnt/arch-root bash -c 'cd /home/mccurdyc/.tools/yay; runuser -u mccurdyc -- makepkg -si --noconfirm' # can't run as root
+# arch-chroot /mnt/arch-root bash -c 'cd /home/mccurdyc/dotfiles; runuser -u mccurdyc -- make run'
+# sudo arch-chroot /mnt/arch-root passwd -d root
 
-umount /mnt/arch-root
-rmdir /mnt/arch-root
+# sudo umount /mnt/arch-root
+# sudo rmdir /mnt/arch-root

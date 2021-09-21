@@ -1,0 +1,4 @@
+{
+  "kernel_image_path": "__KERNEL_IMAGE__",
+  "boot_args": "reboot=k panic=1 pci=off"
+}

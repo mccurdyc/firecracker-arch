@@ -1,2 +1,4 @@
-vmlinux
-arch-rootfs.ext4
+data/
+disks/
+images/
+.firecracker/
