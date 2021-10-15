@@ -5,11 +5,11 @@ set -x
 source variables
 
 function main() {
-  local instance_number=$1
-  local instance_rootfs="${DISK_DIR}/$(basename $IMAGE_ROOTFS).${instance_number}"
-  local socket=$FIRECRACKER_SOCKET.$instance_number
+  local instance_id=$1
+  local instance_rootfs="${DISK_DIR}/$(basename $IMAGE_ROOTFS).${instance_id}"
+  local socket=$FIRECRACKER_SOCKET.$instance_id
 
-  launch_vm $instance_number $socket
+  launch_vm $instance_id $socket
 }
 
 function firecracker_http_file() {
@@ -32,9 +32,9 @@ function create_tap() {
 }
 
 function launch_vm() {
-  local instance_number=$1
+  local instance_id=$1
   local socket=$2
-  local log_file=$DATA_DIR/.fc.$instance_number.log
+  local log_file=$DATA_DIR/.fc.$instance_id.log
   local outfile=""
 
   # Start firecracker daemon
@@ -57,7 +57,7 @@ function launch_vm() {
   done
 
   # VM config
-  outfile="${DATA_DIR}/instance-config.json.${instance_number}"
+  outfile="${DATA_DIR}/instance-config.json.${instance_id}"
   cat conf/firecracker/instance-config.json |
     ./tmpl.sh __INSTANCE_VCPUS__ $VM_VCPUS |
     ./tmpl.sh __INSTANCE_RAM_MB__ $(($VM_RAM_GB * 1024)) \
@@ -65,27 +65,29 @@ function launch_vm() {
   firecracker_http_file $socket PUT 'machine-config' $outfile
 
   # Drives
-  outfile="${DATA_DIR}/drives.json.${instance_number}"
-  root_fs="${DISK_DIR}/"$(basename $IMAGE_ROOTFS).$instance_number
-  cp $IMAGE_ROOTFS $root_fs
+  outfile="${DATA_DIR}/drives.json.${instance_id}"
+  root_fs="${DISK_DIR}/"$(basename $IMAGE_ROOTFS).$instance_id
+  if [[ ! -f "$root_fs" ]]; then
+    cp $IMAGE_ROOTFS $root_fs
+  fi
   cat conf/firecracker/drives.json |
     ./tmpl.sh __ROOT_FS__ $root_fs \
       >$outfile
   firecracker_http_file $socket PUT 'drives/rootfs' $outfile
 
   # Networking
-  tap_main="fctap"$(printf "%02d" $(($instance_number - 1)))
+  tap_main="fctap"$(printf "%02d" $(($instance_id - 1)))
   create_tap $tap_main
 
-  outfile="${DATA_DIR}/network_interfaces.eth0.json.${instance_number}"
-  mac_octet=$(printf '%02x' $(($instance_number + 1)))
+  outfile="${DATA_DIR}/network_interfaces.eth0.json.${instance_id}"
+  mac_octet=$(printf '%02x' $(($instance_id + 1)))
   cat conf/firecracker/network_interfaces.eth0.json |
     ./tmpl.sh __MAC_OCTET__ $mac_octet |
     ./tmpl.sh __TAP_MAIN__ $tap_main \
       >$outfile
   firecracker_http_file $socket PUT 'network-interfaces/eth0' $outfile
 
-  outfile="${DATA_DIR}/boot-source.json.${instance_number}"
+  outfile="${DATA_DIR}/boot-source.json.${instance_id}"
   cat conf/firecracker/boot-source.json |
     ./tmpl.sh __KERNEL_IMAGE__ $KERNEL_IMAGE \
       >$outfile
@@ -93,7 +95,11 @@ function launch_vm() {
 
   # Start VM
   firecracker_http_file $socket PUT 'actions' conf/firecracker/instance-start.json
-  [ $? -eq 0 ] && echo "Instance $instance_number started. Run 'nmap -sn 192.168.1.1/24' to find the instance's IP."
+  [ $? -eq 0 ] && echo "Instance $instance_id started. Run 'nmap -sn 192.168.1.1/24' to find the instance's IP."
 }
+
+if [ "$#" -eq 1 ]; then
+  main $1
+fi
 
 main $(($(find $FIRECRACKER_PID_DIR -type f | wc -l) + 1))
