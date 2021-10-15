@@ -100,6 +100,6 @@ function launch_vm() {
 
 if [ "$#" -eq 1 ]; then
   main $1
+else
+  main $(($(find $FIRECRACKER_PID_DIR -type f | wc -l) + 1))
 fi
-
-main $(($(find $FIRECRACKER_PID_DIR -type f | wc -l) + 1))
