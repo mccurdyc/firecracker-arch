@@ -10,8 +10,8 @@ for i in $(seq 0 $(($number_vms - 1))); do
   sudo ip link delete ${tap_main_id}
 done
 
-# sudo ip link delete $FIRECRACKER_BRIDGE
 rm -rf data/*
+rm -rf data/.*
 rm -rf disks/*
 rm -rf data/.fc.*.log
 rm -rf .firecracker/*

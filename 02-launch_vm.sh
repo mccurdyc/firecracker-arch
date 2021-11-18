@@ -76,7 +76,7 @@ function launch_vm() {
   firecracker_http_file $socket PUT 'drives/rootfs' $outfile
 
   # Networking
-  tap_main="fctap"$(printf "%02d" $(($instance_id - 1)))
+  tap_main="fctap-$instance_id"
   create_tap $tap_main
 
   outfile="${DATA_DIR}/network_interfaces.eth0.json.${instance_id}"
