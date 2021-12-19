@@ -9,9 +9,8 @@ DATA_DIR=/home/mccurdyc/src/github.com/mccurdyc/firecracker-arch/data
 DISK_DIR=/home/mccurdyc/src/github.com/mccurdyc/firecracker-arch/disks
 IMAGE_DIR=$WORK_DIR/images
 
-IMAGE_ROOTFS=$IMAGE_DIR/arch-rootfs.ext4
+IMAGE_ROOTFS=$IMAGE_DIR/minimal-rootfs.ext4
 KERNEL_IMAGE=$IMAGE_DIR/vmlinux
-INITRD=$IMAGE_DIR/initramfs.img
 
 FIRECRACKER=/usr/bin/firecracker
 FIRECRACKER_PID_DIR=$WORK_DIR/.firecracker
@@ -20,6 +19,3 @@ FIRECRACKER_BRIDGE=br0
 
 EGRESS_IFACE=$FIRECRACKER_BRIDGE
 VMS_NETWORK_PREFIX=192.168.1
-
-KEYPAIR_DIR=keypairs
-DEFAULT_KP=kp

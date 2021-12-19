@@ -28,7 +28,7 @@ function create_tap() {
     sudo ip link set dev $device up
   fi
 
-  sudo ip link set $tap_main master $FIRECRACKER_BRIDGE
+  sudo ip link set $device master $FIRECRACKER_BRIDGE
 }
 
 function launch_vm() {
@@ -44,7 +44,7 @@ function launch_vm() {
     sudo $FIRECRACKER \
       --api-sock $socket \
       --log-path $log_file \
-      --level Error \
+      --level Debug \
       --show-level \
       --show-log-origin &
     pid=$!

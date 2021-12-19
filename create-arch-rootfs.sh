@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # https://blog.herecura.eu/blog/2020-05-21-toying-around-with-firecracker/
-set -eu -o pipefail
+set -x
 
 NAME=$1
 
@@ -8,22 +8,20 @@ NAME=$1
 
 [[ -e $NAME.ext4 ]] && rm $NAME.ext4
 
-truncate -s 2G $NAME.ext4
+truncate -s 7G $NAME.ext4
 sudo mkfs.ext4 $NAME.ext4
 
-# cleanup first
-sudo umount /mnt/arch-root
-sudo rmdir /mnt/arch-root
-
 sudo mkdir -p /mnt/arch-root
-sudo mount "$(pwd)"/$NAME.ext4 /mnt/arch-root
+sudo mount "$(pwd)/$NAME.ext4" /mnt/arch-root
 sudo pacstrap /mnt/arch-root base \
   base-devel \
   openssh \
-  sudo
+  mosh \
+  sudo \
+  ansible
 
-sudo mkdir -p /mnt/arch-root/home/mccurdyc/
-sudo cp -r $(pwd)/etc /mnt/arch-root
+# Necessary to get attached to bridge and get SSH access.
+sudo cp -r "$(pwd)/etc" /mnt/arch-root
 
 sudo rm /mnt/arch-root/etc/systemd/system/getty.target.wants/*
 sudo rm /mnt/arch-root/etc/systemd/system/multi-user.target.wants/*
@@ -31,8 +29,9 @@ sudo rm /mnt/arch-root/etc/systemd/system/multi-user.target.wants/*
 sudo ln -s /dev/null /mnt/arch-root/etc/systemd/system/systemd-random-seed.service
 sudo ln -s /dev/null /mnt/arch-root/etc/systemd/system/cryptsetup.target
 
-arch-chroot /mnt/arch-root systemctl enable --now systemd-networkd.service
-arch-chroot /mnt/arch-root systemctl enable --now sshd.service
+# These fail, but that's okay, we just need the symlinks created.
+sudo arch-chroot /mnt/arch-root systemctl enable --now systemd-networkd.service
+sudo arch-chroot /mnt/arch-root systemctl enable --now sshd.service
 
 sudo umount /mnt/arch-root
 sudo rmdir /mnt/arch-root
