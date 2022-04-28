@@ -41,5 +41,7 @@ sudo arch-chroot /mnt/arch-root systemctl enable --now systemd-networkd.service
 sudo arch-chroot /mnt/arch-root systemctl enable --now sshd.service
 sudo arch-chroot /mnt/arch-root systemctl enable --now tailscaled.service
 
+sudo arch-chroot /mnt/arch-root useradd -m -G wheel -s /bin/bash foo
+
 sudo umount /mnt/arch-root
 mv $NAME.ext4 $IMAGE_DIR
