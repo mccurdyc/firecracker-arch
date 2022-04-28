@@ -1,15 +1,16 @@
 #! /usr/bin/env bash
 
-set -x
+set -o nounset
 
 source variables
 
 function main() {
   local instance_id=$1
+  local instance_num=$2
   local instance_rootfs="${DISK_DIR}/$(basename $IMAGE_ROOTFS).${instance_id}"
   local socket=$FIRECRACKER_SOCKET.$instance_id
 
-  launch_vm $instance_id $socket
+  launch_vm $instance_id $socket $instance_num
 }
 
 function firecracker_http_file() {
@@ -34,6 +35,7 @@ function create_tap() {
 function launch_vm() {
   local instance_id=$1
   local socket=$2
+  local instance_num=$3
   local log_file=$DATA_DIR/.fc.$instance_id.log
   local outfile=""
 
@@ -49,7 +51,7 @@ function launch_vm() {
       --show-log-origin &
     pid=$!
     echo $pid >$FIRECRACKER_PID_DIR/$pid
-    echo "Started Firecracker with pid=$pid, logs: $log_file"
+    echo "Started Firecracker!!!"
   )
 
   while [ ! -e $socket ]; do
@@ -76,11 +78,11 @@ function launch_vm() {
   firecracker_http_file $socket PUT 'drives/rootfs' $outfile
 
   # Networking
-  tap_main="fctap-$instance_id"
+  tap_main="fctap-${instance_id}"
   create_tap $tap_main
 
   outfile="${DATA_DIR}/network_interfaces.eth0.json.${instance_id}"
-  mac_octet=$(printf '%02x' $(($instance_id + 1)))
+  mac_octet=$(printf '%02x' $(($instance_num + 1)))
   cat conf/firecracker/network_interfaces.eth0.json |
     ./tmpl.sh __MAC_OCTET__ $mac_octet |
     ./tmpl.sh __TAP_MAIN__ $tap_main \
@@ -98,8 +100,10 @@ function launch_vm() {
   [ $? -eq 0 ] && echo "Instance $instance_id started. Run 'nmap -sn 192.168.1.1/24' to find the instance's IP."
 }
 
+instance_num=$(($(find $FIRECRACKER_PID_DIR -type f | wc -l) + 1))
+
 if [ "$#" -eq 1 ]; then
-  main $1
+  main $1 $instance_num
 else
-  main $(($(find $FIRECRACKER_PID_DIR -type f | wc -l) + 1))
+  main $instance_num $instance_num
 fi
