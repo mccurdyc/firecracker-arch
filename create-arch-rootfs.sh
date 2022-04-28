@@ -8,7 +8,7 @@ NAME=$1
 
 [[ -e $NAME.ext4 ]] && rm $NAME.ext4
 
-truncate -s 7G $NAME.ext4
+truncate -s 25G $NAME.ext4
 sudo mkfs.ext4 $NAME.ext4
 
 sudo mkdir -p /mnt/arch-root
@@ -18,7 +18,11 @@ sudo pacstrap /mnt/arch-root base \
   openssh \
   mosh \
   sudo \
-  ansible
+  vim \
+  git \
+  keychain \
+  tailscale \
+  expect
 
 # Necessary to get attached to bridge and get SSH access.
 sudo cp -r "$(pwd)/etc" /mnt/arch-root
@@ -32,6 +36,6 @@ sudo ln -s /dev/null /mnt/arch-root/etc/systemd/system/cryptsetup.target
 # These fail, but that's okay, we just need the symlinks created.
 sudo arch-chroot /mnt/arch-root systemctl enable --now systemd-networkd.service
 sudo arch-chroot /mnt/arch-root systemctl enable --now sshd.service
+sudo arch-chroot /mnt/arch-root systemctl enable --now tailscaled.service
 
 sudo umount /mnt/arch-root
-sudo rmdir /mnt/arch-root
