@@ -9,7 +9,7 @@ DATA_DIR=/home/mccurdyc/src/github.com/mccurdyc/firecracker-arch/data
 DISK_DIR=/home/mccurdyc/src/github.com/mccurdyc/firecracker-arch/disks
 IMAGE_DIR=$WORK_DIR/images
 
-IMAGE_ROOTFS=$IMAGE_DIR/minimal-rootfs.ext4
+IMAGE_ROOTFS=$IMAGE_DIR/arch-rootfs.ext4
 KERNEL_IMAGE=$IMAGE_DIR/vmlinux
 
 FIRECRACKER=/usr/bin/firecracker
