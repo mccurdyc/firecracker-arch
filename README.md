@@ -22,14 +22,14 @@ between my work and personal machines and I struggle to check in changes.
     ./create-arch-rootfs.sh
     ```
 
-1. Start the Firecracker API.
-
-    ```bash
-    rm -rf /tmp/firecracker.socket && firecracker --api-sock /tmp/firecracker.socket &
-    ```
+    This will create a user `root` with a default passphrase of `root`.
 
 1. Create a bridge network interface on your host.
 
-https://www.systutorials.com/setting-up-gateway-using-iptables-and-route-on-linux/
+    https://github.com/firecracker-microvm/firecracker/blob/main/docs/network-setup.md#advanced-setting-up-a-bridge-interface
 
-1. Start a new VM.
+1. Start a VM with an alias of `foobar`.
+
+    ```bash
+    ./02-launch_vm.sh foobar
+    ```

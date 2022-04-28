@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # https://blog.herecura.eu/blog/2020-05-21-toying-around-with-firecracker/
-set -x
+
+set -o nounset
+
+source variables
 
 NAME=$1
 
@@ -8,7 +11,7 @@ NAME=$1
 
 [[ -e $NAME.ext4 ]] && rm $NAME.ext4
 
-truncate -s 25G $NAME.ext4
+truncate -s ${IMAGE_SIZE} $NAME.ext4
 sudo mkfs.ext4 $NAME.ext4
 
 sudo mkdir -p /mnt/arch-root
@@ -39,3 +42,4 @@ sudo arch-chroot /mnt/arch-root systemctl enable --now sshd.service
 sudo arch-chroot /mnt/arch-root systemctl enable --now tailscaled.service
 
 sudo umount /mnt/arch-root
+mv $NAME.ext4 $IMAGE_DIR

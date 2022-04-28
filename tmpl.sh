@@ -1,4 +1,6 @@
-#!/bin/bash
+#! /usr/bin/env bash
+
+set -o nounset
 
 # This script helps "render templates" of configuration files replacing variables
 

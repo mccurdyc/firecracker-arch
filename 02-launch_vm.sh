@@ -36,7 +36,7 @@ function launch_vm() {
   local instance_id=$1
   local socket=$2
   local instance_num=$3
-  local log_file=$DATA_DIR/.fc.$instance_id.log
+  local log_file=$DATA_DIR/$instance_id.log
   local outfile=""
 
   # Start firecracker daemon
